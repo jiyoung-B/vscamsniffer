@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     #provider
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.kakao',
+    'allauth.socialaccount.providers.naver',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +65,7 @@ ROOT_URLCONF = 'corkagefree.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -137,7 +138,7 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-SITE_ID = 1
+SITE_ID = 2
 LOGIN_REDIRECT_URL ='/'
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -151,6 +152,9 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     },
     'kakao': {
+        'SCOPE': ['profile_nickname'],
+    },
+    'naver': {
         'SCOPE': ['profile_nickname'],
     }
 }
