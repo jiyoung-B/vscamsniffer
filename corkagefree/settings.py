@@ -57,7 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware",
+    "allauth.account.middleware.AccountMiddleware", #소셜로그인
 ]
 
 ROOT_URLCONF = 'corkagefree.urls'
@@ -133,6 +133,8 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+# 소셜로그인 구현시 작성
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -141,6 +143,7 @@ AUTHENTICATION_BACKENDS = (
 SITE_ID = 2
 LOGIN_REDIRECT_URL ='/'
 
+#받아올정보
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': [
