@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roll Playing</title>
+    {% block styles %}
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #2c3e50;
+        color: #e8e8e8;
+      }
+
+      .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .chatheader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #34495e;
+        padding: 10px 20px;
+        text-align: center;
+        z-index: 10;
+      }
+
+      .chatbody {
+        flex-grow: 1;
+        margin-top: 60px; /* 헤더 높이만큼 아래로 밀어줌 */
+        margin-bottom: 60px; /* 푸터 높이만큼 위로 밀어줌 */
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .chatfooter {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #34495e;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        z-index: 10;
+      }
+
+      .message {
+        background-color: #1abc9c;
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 70%;
+        word-wrap: break-word;
+        display: inline-block;
+        margin-bottom: 10px;
+      }
+
+      .message.sent {
+        background-color: #2980b9;
+        align-self: flex-end; /* 오른쪽 정렬 */
+      }
+
+      .message.received {
+        background-color: #1abc9c;
+        align-self: flex-start; /* 왼쪽 정렬 */
+      }
+
+      .input-box {
+        width: 80%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #34495e;
+        color: #e8e8e8;
+        font-size: 16px;
+      }
+
+      .input-box:focus {
+        outline: none;
+        border: 1px solid #1abc9c;
+      }
+
+      .send-button,
+      .voice-button {
+        background-color: #1abc9c;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        margin-left: 10px;
+      }
+      .send-button:hover,
+      .voice-button:hover {
+        background-color: #16a085;
+      }
+    </style>
+    {% endblock %}
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chatheader">Roll Playing Chat</div>
+      {% if user.is_authenticated %}
+      <div class="chatbody" id="chatBody">
+        <!-- 받은 메시지 (왼쪽) -->
+        <div class="message received">
+          안녕하세요 영등포경찰청 박거량형사입니다.
+        </div>
+        <!-- 보낸 메시지 (오른쪽) -->
+        <div class="message sent"></div>
+        <!-- 채팅 메시지가 동적으로 여기에 추가될 것입니다 -->
+      </div>
+      <div class="chatfooter">
+        <input
+          class="input-box"
+          type="text"
+          placeholder="Type a message..."
+          id="messageInput"
+        />
+        <button class="send-button" id="sendButton">Send</button>
+        <button class="voice-button" id="voiceButton">🎤</button>
+      </div>
+    </div>
+    {% else %}
+    <div class="message received">로그인을 하시면 이용하실 수 있습니다.</div>
+    {% endif %}
+    <script>
+      const chatBody = document.getElementById("chatBody");
+      const messageInput = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
+      //음성버튼
+      const voiceButton = document.getElementById("voiceButton");
+      // WebSocket 연결 (Django 서버 주소에 맞게 수정)
+      const socket = new WebSocket("ws://localhost:8000/ws/rp/");
+
+      socket.onopen = function () {
+        console.log("WebSocket 연결 성공!");
+      };
+
+      socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        console.log("서버 응답:", data);
+
+        // 서버로부터 받은 메시지를 채팅창에 추가
+        const botResponse = document.createElement("div");
+        botResponse.classList.add("message", "received");
+        botResponse.textContent = data.message;
+        chatBody.appendChild(botResponse);
+
+        // 최신 메시지로 스크롤 이동
+        chatBody.scrollTop = chatBody.scrollHeight;
+      };
+
+      socket.onclose = function () {
+        console.log("WebSocket 연결 종료됨");
+      };
+      // 음성메세지
+      voiceButton.addEventListener("click", function () {
+        const recognition = new (window.SpeechRecognition ||
+          window.webkitSpeechRecognition)();
+        recognition.lang = "ko-KR"; // 한국어 설정
+        recognition.start(); // 음성 인식 시작
+
+        recognition.onresult = function (event) {
+          const transcript = event.results[0][0].transcript;
+          messageInput.value = transcript; // 인식된 텍스트를 input 창에 표시
+        };
+
+        recognition.onerror = function (event) {
+          console.error("음성 인식 오류:", event.error);
+        };
+      });
+
+      sendButton.addEventListener("click", function () {
+        const messageText = messageInput.value.trim();
+        if (messageText) {
+          // 사용자의 메시지를 채팅에 추가
+          const userMessage = document.createElement("div");
+          userMessage.classList.add("message", "sent");
+          userMessage.textContent = messageText;
+          chatBody.appendChild(userMessage);
+
+          // WebSocket을 통해 서버에 메시지 전송
+          socket.send(JSON.stringify({ message: messageText }));
+
+          // 메시지 입력창 초기화
+          messageInput.value = "";
+
+          // 최신 메시지로 스크롤 이동
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }
+      });
+
+      // Enter 키를 눌렀을 때도 메시지를 보낼 수 있도록 추가
+      messageInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          sendButton.click();
+        }
+      });
+    </script>
+  </body>
+</html>

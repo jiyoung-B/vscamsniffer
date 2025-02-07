@@ -7,6 +7,7 @@ import requests
 
 
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,6 +30,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    #비동치러리를 위한 ASGI 웹서버
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -36,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'rest_framework',
     'users',
+    'rp',
 
     #allauth
     'allauth',
@@ -47,7 +52,13 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.kakao',
     'allauth.socialaccount.providers.naver',
+
+    #chat service
+    'channels',
 ]
+
+#asgi 앱설정
+ASGI_APPLICATION = 'corkagefree.asgi.application'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -61,7 +72,11 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'corkagefree.urls'
-
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -161,4 +176,3 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': ['profile_nickname'],
     }
 }
-###

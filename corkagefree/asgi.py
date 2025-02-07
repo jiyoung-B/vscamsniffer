@@ -1,16 +1,20 @@
-"""
-ASGI config for corkagefree project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/4.1/howto/deployment/asgi/
-"""
 
 import os
-
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
+import rp.routing
+from channels.auth import AuthMiddlewareStack
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'corkagefree.settings')
 
+#asgi 어플리케이션 초기화
 application = get_asgi_application()
+
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),  # HTTP 요청 처리
+    "websocket": AuthMiddlewareStack(  # WebSocket 요청 처리
+        URLRouter(
+            rp.routing.websocket_urlpatterns
+        )
+    ),
+})
