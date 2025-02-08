@@ -24,7 +24,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'rest_framework',
+    'rest_framework_simplejwt',
     'users',
     'rp',
 
@@ -55,14 +56,20 @@ INSTALLED_APPS = [
 
     #chat service
     'channels',
+    'corsheaders',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':(
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+)}
 #asgi 앱설정
 ASGI_APPLICATION = 'corkagefree.asgi.application'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -147,6 +154,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# ✅ CORS 설정 추가 (React와 Django 연결 가능)
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React 프론트엔드 주소
+]
+
+CORS_ALLOW_CREDENTIALS = True  # 인증정보 허용
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
 
 
 # 소셜로그인 구현시 작성
@@ -155,8 +169,13 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-SITE_ID = 2
-LOGIN_REDIRECT_URL ='/'
+SITE_ID = 3
+LOGIN_REDIRECT_URL ='http://localhost:3000/'
+LOGOUT_REDIRECT_URL = "http://localhost:3000/"
+
+ACCOUNT_LOGIN_ON_GET = True  # GET 요청 시 바로 로그인 수행
+SOCIALACCOUNT_LOGIN_ON_GET = True  # 소셜 계정도 GET 요청 시 바로 로그인
+
 
 #받아올정보
 SOCIALACCOUNT_PROVIDERS = {
