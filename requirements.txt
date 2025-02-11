@@ -20,6 +20,7 @@ cffi==1.17.1
 channels==4.2.0
 channels_redis==4.2.1
 charset-normalizer==3.4.1
+colorama==0.4.6
 comm==0.2.2
 constantly==23.10.4
 cryptography==44.0.0
@@ -29,6 +30,7 @@ decorator==5.1.1
 defusedxml==0.7.1
 Django==5.1.5
 django-allauth==65.3.1
+django-cors-headers==4.7.0
 django-dotenv==1.4.2
 django-environ==0.12.0
 djangorestframework==3.15.2
@@ -59,7 +61,6 @@ json5==0.10.0
 jsonpointer==3.0.0
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
-jupyter==1.1.1
 jupyter-console==6.6.3
 jupyter-events==0.12.0
 jupyter-lsp==2.2.5
@@ -86,7 +87,6 @@ nbclient==0.10.2
 nbconvert==7.16.6
 nbformat==5.10.4
 nest-asyncio==1.6.0
-notebook==7.3.2
 notebook_shim==0.2.4
 numpy==2.0.2
 opt_einsum==3.4.0
@@ -112,14 +112,11 @@ pydantic_core==2.27.2
 Pygments==2.19.1
 PyJWT==2.10.1
 pynput==1.7.7
-pyobjc-core==11.0
-pyobjc-framework-ApplicationServices==11.0
-pyobjc-framework-Cocoa==11.0
-pyobjc-framework-CoreText==11.0
-pyobjc-framework-Quartz==11.0
 pyOpenSSL==25.0.0
 python-dateutil==2.9.0.post0
 python-json-logger==3.2.1
+pywin32==308
+pywinpty==2.0.15
 PyYAML==6.0.2
 pyzmq==26.2.1
 redis==5.2.1
@@ -133,6 +130,7 @@ scikit-learn==1.6.1
 scipy==1.15.1
 Send2Trash==1.8.3
 service-identity==24.2.0
+setuptools==75.8.0
 six==1.17.0
 sniffio==1.3.1
 soupsieve==2.6
@@ -143,7 +141,6 @@ starlette==0.45.3
 tensorboard==2.18.0
 tensorboard-data-server==0.7.2
 tensorflow==2.18.0
-tensorflow-io-gcs-filesystem==0.37.1
 termcolor==2.5.0
 terminado==0.18.1
 threadpoolctl==3.5.0
@@ -154,6 +151,7 @@ Twisted==24.11.0
 txaio==23.1.1
 types-python-dateutil==2.9.0.20241206
 typing_extensions==4.12.2
+tzdata==2025.1
 uri-template==1.3.0
 urllib3==2.3.0
 wcwidth==0.2.13
@@ -161,6 +159,7 @@ webcolors==24.11.1
 webencodings==0.5.1
 websocket-client==1.8.0
 Werkzeug==3.1.3
+wheel==0.45.1
 widgetsnbextension==4.0.13
 wrapt==1.17.2
 zope.interface==7.2
