@@ -21,24 +21,37 @@ def user_list(request):
     users = list(User.objects.values("id", "username", "email"))
     return JsonResponse(users, safe=False)
 
+# users/views.py
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
-# ✅ JWT 기반 사용자 정보 반환
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@login_required
 def get_user_info(request):
-    """현재 로그인된 사용자 정보 반환 (JWT 인증)"""
+    user = request.user
     user_info = {
-        "username": request.user.username,
-        "email": request.user.email,
+        "username": user.username,
+        "email": user.email,
     }
-    try:
-        social_account = SocialAccount.objects.get(user=request.user)
-        user_info["provider"] = social_account.provider
-        user_info["social_id"] = social_account.uid
-    except SocialAccount.DoesNotExist:
-        user_info["provider"] = "local"
+    return JsonResponse(user_info)
 
-    return JsonResponse(user_info, status=200)
+
+# # ✅ JWT 기반 사용자 정보 반환
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def get_user_info(request):
+#     """현재 로그인된 사용자 정보 반환 (JWT 인증)"""
+#     user_info = {
+#         "username": request.user.username,
+#         "email": request.user.email,
+#     }
+#     try:
+#         social_account = SocialAccount.objects.get(user=request.user)
+#         user_info["provider"] = social_account.provider
+#         user_info["social_id"] = social_account.uid
+#     except SocialAccount.DoesNotExist:
+#         user_info["provider"] = "local"
+
+#     return JsonResponse(user_info, status=200)
 
 
 # ✅ 로그아웃 처리

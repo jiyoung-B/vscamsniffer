@@ -141,6 +141,7 @@
       //음성버튼
       const voiceButton = document.getElementById("voiceButton");
       // WebSocket 연결 (Django 서버 주소에 맞게 수정)
+      // const socket = new WebSocket("ws://localhost:8000/ws/rp/");
       const socket = new WebSocket("ws://localhost:8000/ws/rp/");
 
       socket.onopen = function () {
