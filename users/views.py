@@ -32,21 +32,45 @@ state = os.environ.get("STATE")
 BASE_URL = 'http://127.0.0.1:8000/'
 GOOGLE_CALLBACK_URI = 'http://127.0.0.1:8000/accounts/google/callback/'
 
+# users/views.py
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
 
-# 구글 로그인
-def google_login(request):
-    scope = "https://www.googleapis.com/auth/userinfo.email"
-    client_id = os.environ.get("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
-    redirect(f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&response_type=code&redirect_uri={GOOGLE_CALLBACK_URI}&scope={scope}")
+@login_required
+def get_user_info(request):
+    user = request.user
+    user_info = {
+        "username": user.username,
+        "email": user.email,
+    }
+    return JsonResponse(user_info)
+
+
+# # ✅ JWT 기반 사용자 정보 반환
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def get_user_info(request):
+#     """현재 로그인된 사용자 정보 반환 (JWT 인증)"""
+#     user_info = {
+#         "username": request.user.username,
+#         "email": request.user.email,
+#     }
+#     try:
+#         social_account = SocialAccount.objects.get(user=request.user)
+#         user_info["provider"] = social_account.provider
+#         user_info["social_id"] = social_account.uid
+#     except SocialAccount.DoesNotExist:
+#         user_info["provider"] = "local"
+
+#     return JsonResponse(user_info, status=200)
+
 
 
 
 
 logger = logging.getLogger(__name__)
 
-def google_callback(request):
-    return request
 
 # def GoogleLogin(request):
 #     return request

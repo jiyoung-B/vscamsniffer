@@ -3,6 +3,8 @@ from pathlib import Path
 import os
 import requests
 import dotenv
+from decouple import config
+
 
 
 
@@ -19,14 +21,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 dotenv.load_dotenv()
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
 API_KEY=os.environ.get("SECRET_KEY")
 
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '40.82.157.231', 'vscamsniffer.work.gd']
+
 
 
 # Application definition
@@ -157,18 +160,31 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ✅ CORS 설정 추가 (React와 Django 연결 가능)
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",  # React 프론트엔드 주소
+#     "http://40.82.157.231",# VM의 퍼블릭 IP
+# ]
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React 프론트엔드 주소
+    'http://40.82.157.231:3000',  # React에서 API를 호출할 수 있도록 허용
+    'https://vscamsniffer.work.gd',
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # 인증정보 허용
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://40.82.157.231",
+    "http://40.82.157.231:3000",
+    "https://vscamsniffer.work.gd",  # HTTPS 기반 도메인 추가
+]
+
 
 
 # 소셜로그인 구현시 작성
@@ -177,10 +193,17 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
+
 SITE_ID = 2
 REST_USE_JWT = True
 LOGIN_REDIRECT_URL ='/'
 LOGOUT_REDIRECT_URL = "http://localhost:3000/"
+
+
+LOGIN_REDIRECT_URL = '/'
+# LOGOUT_REDIRECT_URL = "https://vscamsniffer.work.gd/"
+
+
 
 ACCOUNT_LOGIN_ON_GET = True  # GET 요청 시 바로 로그인 수행
 SOCIALACCOUNT_LOGIN_ON_GET = True  # 소셜 계정도 GET 요청 시 바로 로그인
