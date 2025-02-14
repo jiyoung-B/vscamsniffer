@@ -2,7 +2,7 @@
 from pathlib import Path
 import os
 import requests
-
+import dotenv
 
 
 
@@ -17,8 +17,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+dotenv.load_dotenv()
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
+API_KEY=os.environ.get("SECRET_KEY")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -32,6 +34,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 INSTALLED_APPS = [
     #비동치러리를 위한 ASGI 웹서버
     'daphne',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'users',
     'rp',
@@ -48,6 +52,8 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
 
     #provider
     'allauth.socialaccount.providers.google',
@@ -56,8 +62,10 @@ INSTALLED_APPS = [
 
     #chat service
     'channels',
-    'corsheaders',
 ]
+
+
+REST_USE_JWT = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES':(
@@ -169,13 +177,15 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-SITE_ID = 3
-LOGIN_REDIRECT_URL ='http://localhost:3000/'
+SITE_ID = 2
+REST_USE_JWT = True
+LOGIN_REDIRECT_URL ='/'
 LOGOUT_REDIRECT_URL = "http://localhost:3000/"
 
 ACCOUNT_LOGIN_ON_GET = True  # GET 요청 시 바로 로그인 수행
 SOCIALACCOUNT_LOGIN_ON_GET = True  # 소셜 계정도 GET 요청 시 바로 로그인
-
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
 #받아올정보
 SOCIALACCOUNT_PROVIDERS = {
@@ -186,7 +196,8 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-        }
+        },
+        'OAUTH_PKCE_ENABLED': True,
     },
     'kakao': {
         'SCOPE': ['profile_nickname'],
@@ -195,3 +206,11 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': ['profile_nickname'],
     }
 }
+
+
+# 프로젝트 루트 디렉토리 (BASE_DIR)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 미디어 파일 저장 경로 설정
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+

@@ -114,7 +114,7 @@
       <div class="chatbody" id="chatBody">
         <!-- 받은 메시지 (왼쪽) -->
         <div class="message received">
-          안녕하세요 영등포경찰청 박거량형사입니다.
+          안녕하세요 영등포경찰청 박거량형사입니다.!!
         </div>
         <!-- 보낸 메시지 (오른쪽) -->
         <div class="message sent"></div>
@@ -128,6 +128,7 @@
           id="messageInput"
         />
         <button class="send-button" id="sendButton">Send</button>
+        <button id="testVoiceButton">음성 테스트</button>
         <button class="voice-button" id="voiceButton">🎤</button>
       </div>
     </div>
@@ -156,7 +157,22 @@
         botResponse.classList.add("message", "received");
         botResponse.textContent = data.message;
         chatBody.appendChild(botResponse);
-
+        // 음성 출력 (TTS)
+        function speakText(text) {
+          const speech = new SpeechSynthesisUtterance();
+          speech.text = text;
+          speech.lang = "ko-KR";
+          speech.rate = 1.0;
+          speech.pitch = 1.0;
+          window.speechSynthesis.speak(speech);
+        }
+        document
+          .getElementById("testVoiceButton")
+          .addEventListener("click", () => {
+            speakText("테스트 문장입니다. 음성이 나오나요?");
+          });
+        //TTS
+        speakText(data.message);
         // 최신 메시지로 스크롤 이동
         chatBody.scrollTop = chatBody.scrollHeight;
       };

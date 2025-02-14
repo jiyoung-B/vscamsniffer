@@ -4,7 +4,11 @@ import os
 import sys
 import dotenv
 
-dotenv.read_dotenv()
+dotenv.load_dotenv()
+key = os.getenv("SECRET_KEY")
+api_key = os.getenv("API_KEY")
+
+print(key, api_key)
 
 def main():
     """Run administrative tasks."""
@@ -25,6 +29,6 @@ if __name__ == '__main__':
 
 
 if __name__ == '__main__':
-    dotenv.read_dotenv() 
+    dotenv.load_dotenv()
     main()
 

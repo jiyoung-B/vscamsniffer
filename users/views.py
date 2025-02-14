@@ -1,86 +1,56 @@
 from django.contrib.auth import logout
 from django.http import JsonResponse
-from allauth.socialaccount.models import SocialAccount
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse, HttpResponseRedirect
 from allauth.socialaccount.models import SocialAccount
-from .models import UserInputData
+from .models import *
+from json import JSONDecodeError
+from django.http import JsonResponse
+import requests
+from rest_framework import status
 from django.views import View
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.response import Response
+import os
+from django.shortcuts import redirect
+#login test
+import logging
+import dotenv
 
 
-# ✅ 사용자 목록 반환
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])  # 인증된 사용자만 접근 가능
-def user_list(request):
-    users = list(User.objects.values("id", "username", "email"))
-    return JsonResponse(users, safe=False)
+# 구글 소셜로그인 변수 설정
+dotenv.load_dotenv()
+
+state = os.environ.get("STATE")
+BASE_URL = 'http://127.0.0.1:8000/'
+GOOGLE_CALLBACK_URI = 'http://127.0.0.1:8000/accounts/google/callback/'
 
 
-# ✅ JWT 기반 사용자 정보 반환
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_user_info(request):
-    """현재 로그인된 사용자 정보 반환 (JWT 인증)"""
-    user_info = {
-        "username": request.user.username,
-        "email": request.user.email,
-    }
-    try:
-        social_account = SocialAccount.objects.get(user=request.user)
-        user_info["provider"] = social_account.provider
-        user_info["social_id"] = social_account.uid
-    except SocialAccount.DoesNotExist:
-        user_info["provider"] = "local"
 
-    return JsonResponse(user_info, status=200)
+# 구글 로그인
+def google_login(request):
+    scope = "https://www.googleapis.com/auth/userinfo.email"
+    client_id = os.environ.get("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
+    redirect(f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&response_type=code&redirect_uri={GOOGLE_CALLBACK_URI}&scope={scope}")
 
 
-# ✅ 로그아웃 처리
-@api_view(['POST'])
-def user_logout(request):
-    """로그아웃 처리 및 세션 제거"""
-    logout(request)
-    return JsonResponse({"message": "Logout successful"}, status=200)
 
 
-# ✅ 보호된 뷰 (테스트용)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def protected_view(request):
-    """JWT 인증이 필요한 보호된 뷰"""
-    return JsonResponse({"message": f"Hello, {request.user.username}! This is a protected view."}, status=200)
+logger = logging.getLogger(__name__)
 
+def google_callback(request):
+    return request
 
-@api_view(['GET'])
-def google_login_callback(request):
-    """Google 소셜 로그인 후 JWT 토큰 반환"""
-    try:
-        user = request.user
-        if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication failed"}, status=401)
-        
-        # ✅ JWT 토큰 생성
-        refresh = RefreshToken.for_user(user)
-        token_data = {
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-        }
+# def GoogleLogin(request):
+#     return request
 
-        # ✅ React로 리디렉트하며 토큰 전달 (프론트엔드에서 저장)
-        response = HttpResponseRedirect("http://localhost:3000/")
-        response.set_cookie("accessToken", token_data["access"], httponly=False)
-        response.set_cookie("refreshToken", token_data["refresh"], httponly=False)
-        return response
-
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-    
 
 
 # 데이터 목록 반환
