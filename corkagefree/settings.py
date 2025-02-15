@@ -1,41 +1,18 @@
-
 from pathlib import Path
 import os
-import requests
+from datetime import timedelta
 from decouple import config
 
-
-
-
-
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# Security Settings
 SECRET_KEY = config('SECRET_KEY')
-# SECRET_KEY = os.environ.get("SECRET_KEY")
-# DEBUG = config('DEBUG', default=False, cast=bool)
-# ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
-
-
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '40.82.157.231', 'vscamsniffer.work.gd']
 
-
-
-# Application definition
-
+# Application Definition
 INSTALLED_APPS = [
-    #비동치러리를 위한 ASGI 웹서버
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -48,39 +25,43 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'users',
     'rp',
-
-    #allauth
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-
-    #provider
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.kakao',
     'allauth.socialaccount.providers.naver',
-
-    #chat service
     'channels',
     'corsheaders',
 ]
 
+# REST Framework Settings
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES':(
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-)}
-#asgi 앱설정
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+# ASGI Configuration
 ASGI_APPLICATION = 'corkagefree.asgi.application'
 
+# Middleware
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware", #소셜로그인
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'corkagefree.urls'
@@ -89,6 +70,8 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
+
+# Templates Configuration
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -107,10 +90,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'corkagefree.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
+# Database Configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -118,101 +98,74 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
-
+# Password Validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/4.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
-
+# Static Files
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
-
+# Default Primary Key Field Type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-# ✅ CORS 설정 추가 (React와 Django 연결 가능)
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",  # React 프론트엔드 주소
-#     "http://40.82.157.231",# VM의 퍼블릭 IP
-# ]
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://40.82.157.231:3000',  # React에서 API를 호출할 수 있도록 허용
-    'https://vscamsniffer.work.gd',
-]
 
-CORS_ALLOW_CREDENTIALS = True  # 인증정보 허용
+# CORS Settings
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://vscamsniffer.work.gd",
+]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
-    "http://40.82.157.231",
-    "http://40.82.157.231:3000",
-    "https://vscamsniffer.work.gd",  # HTTPS 기반 도메인 추가
+    "http://127.0.0.1:3000",
+    "https://vscamsniffer.work.gd",
 ]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "Authorization",
+    "Content-Type",
+    "X-CSRFToken",
+    "Cache-Control",
+    "Pragma",
+    "Accept",
+]
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS",
+    "PATCH",
+]
+CORS_PREFLIGHT_MAX_AGE = 0  # Disable Preflight Request Caching
 
-
-
-# 소셜로그인 구현시 작성
+# Authentication and Social Login Settings
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
+SITE_ID = 5
+LOGIN_REDIRECT_URL = "http://localhost:3000/"
+SOCIALACCOUNT_ADAPTER = "users.adapters.MySocialAccountAdapter"
+ACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
-SITE_ID = 3
-#LOGIN_REDIRECT_URL ='http://localhost:3000/'
-#LOGOUT_REDIRECT_URL = "http://localhost:3000/"
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = "https://vscamsniffer.work.gd/"
-
-
-ACCOUNT_LOGIN_ON_GET = True  # GET 요청 시 바로 로그인 수행
-SOCIALACCOUNT_LOGIN_ON_GET = True  # 소셜 계정도 GET 요청 시 바로 로그인
-
-
-#받아올정보
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
     },
-    'kakao': {
-        'SCOPE': ['profile_nickname'],
-    },
-    'naver': {
-        'SCOPE': ['profile_nickname'],
-    }
+    'kakao': {'SCOPE': ['profile_nickname']},
+    'naver': {'SCOPE': ['profile_nickname']},
 }
