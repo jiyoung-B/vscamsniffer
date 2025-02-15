@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security Settings
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = True
+DEBUG = True # 개발 환경에서 True, 배포 환경에서는 False로 설정
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '40.82.157.231', 'vscamsniffer.work.gd']
 
 # Application Definition
@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.naver',
     'channels',
     'corsheaders',
+    "attach"
 ]
 
 # REST Framework Settings
@@ -169,3 +170,12 @@ SOCIALACCOUNT_PROVIDERS = {
     'kakao': {'SCOPE': ['profile_nickname']},
     'naver': {'SCOPE': ['profile_nickname']},
 }
+
+# Azure Blob Storage Settings
+DEFAULT_FILE_STORAGE = "storages.backends.azure_storage.AzureBlobStorage"
+
+AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME')
+AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY')
+AZURE_CONTAINER = config('AZURE_CONTAINER')
+MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
+AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"

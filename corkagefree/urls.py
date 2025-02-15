@@ -6,7 +6,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.views.generic import TemplateView  # React 파일을 서빙하기 위해 사용
 # from users.views import google_login_callback
 
+from django.conf import settings
+from django.conf.urls.static import static
 
+from attach.views import AudioFileUploadView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -20,4 +23,7 @@ urlpatterns = [
     path('', TemplateView.as_view(template_name="index.html"), name='home'),
     path("api/data-list/", DataListView.as_view(), name="data_list"),
     path("api/add-data/", AddDataView.as_view(), name="add_data"),
+    
+    path("upload-audio/", AudioFileUploadView.as_view(), name="audio-upload"),
+    path("attach/", include("attach.urls")),
 ]
