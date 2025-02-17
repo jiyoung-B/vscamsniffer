@@ -4,6 +4,14 @@ from datetime import timedelta
 from decouple import config
 
 # Build paths inside the project
+import requests
+import dotenv
+
+
+
+
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security Settings
@@ -12,8 +20,28 @@ DEBUG = True # 개발 환경에서 True, 배포 환경에서는 False로 설정
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '40.82.157.231', 'vscamsniffer.work.gd']
 
 # Application Definition
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+dotenv.load_dotenv()
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
+API_KEY=os.environ.get("SECRET_KEY")
+
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
+
+# Application definition
+
 INSTALLED_APPS = [
     'daphne',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -22,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'users',
     'rp',

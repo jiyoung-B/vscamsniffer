@@ -11,6 +11,14 @@ from .models import UserInputData
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.response import Response
+import os
+from django.shortcuts import redirect
+#login test
+import logging
+import dotenv
 
 # ✅ Preflight 요청 핸들링 함수
 def handle_options_request(request):

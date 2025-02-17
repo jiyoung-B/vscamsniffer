@@ -5,6 +5,28 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.shortcuts import render
+from dotenv import load_dotenv
+import speech_recognition as sr
+from pynput import keyboard 
+
+load_dotenv()
+client = openai.OpenAI(api_key='API_KEY') 
+import openai
+
+openai.api_key = "your-api-key-here"
+
+response = openai.audio.speech.create(
+    model="tts-1",
+    voice="alloy",  # alloy, echo, fable, onyx, nova, shimmer 중 선택 가능
+    input="안녕하세요, 저는 인공지능 챗봇입니다."
+)
+
+# 오디오 파일 저장
+with open("korean_response.mp3", "wb") as audio_file:
+    audio_file.write(response.content)
+
+print("TTS 변환 완료: korean_response.mp3 파일이 생성되었습니다!")
 
 
 
@@ -35,6 +57,26 @@ class GetChatbotAnswerView(View):
         response["Access-Control-Allow-Methods"] = "POST"  # 허용할 메서드 설정
 
         return response
+    
+
+
+
+# STT
+def openai_stt(audio_file_path):
+    try:
+        with open(audio_file_path, "rb") as audio_file:
+            transcription = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+            if transcription.text.strip():  # Check if the returned text is not empty
+                return transcription.text.strip()
+            else:
+                return "None"
+    except FileNotFoundError:
+        return "Audio file not found."
+
+
 
     # def get_answer(question):
     #     query = question
