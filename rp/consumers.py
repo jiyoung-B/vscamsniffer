@@ -35,6 +35,17 @@ class RPConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
         print("웹소켓 연결 완료")
+        
+    async def send_rp_options(self):
+        #첫번째 질문
+        options = [
+            "경찰 사칭",
+            "은행 사칭",
+            "대출 사칭"
+        ]
+        await self.send(text_data=json.dumps({
+            "options": options
+        }))
 
 
     # 클라이언트 메시지 수신
