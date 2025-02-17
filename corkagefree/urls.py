@@ -20,6 +20,7 @@ urlpatterns = [
     path("api/data-list/", DataListView.as_view(), name="data_list"),
     path("api/add-data/", AddDataView.as_view(), name="add_data"),
     path('rollplaying/', include('rp.urls')),
+    path('solution/', include('solution.urls')),
 ]
 
 
