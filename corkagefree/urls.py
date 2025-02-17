@@ -23,7 +23,8 @@ urlpatterns = [
     path('', TemplateView.as_view(template_name="index.html"), name='home'),
     path("api/data-list/", DataListView.as_view(), name="data_list"),
     path("api/add-data/", AddDataView.as_view(), name="add_data"),
-    
     path("upload-audio/", AudioFileUploadView.as_view(), name="audio-upload"),
     path("attach/", include("attach.urls")),
+    path('rollplaying/', include('rp.urls')),
+    path('solution/', include('solution.urls')),
 ]
