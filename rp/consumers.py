@@ -4,97 +4,205 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import os
 from dotenv import load_dotenv
 from elevenlabs import ElevenLabs
-from elevenlabs import play
-from io import BytesIO
 import base64
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.huggingface import HuggingFaceLLM
-from llama_index.core.settings import Settings
 import torch
-from transformers import LlamaForCausalLM, LlamaTokenizer
-from safetensors.torch import load_file
-
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from peft import PeftModel
+import asyncio
+from functools import lru_cache
 
 load_dotenv()
 
+# Environment variables
 ele_api_key = os.environ.get("API_KEY")
-voice_id = "PLfpgtLkFW07fDYbUiRJ"  # 등록된 목소리 ID
+voice_id = "PLfpgtLkFW07fDYbUiRJ"
 model_id = "eleven_multilingual_v2"
-output_path = "media/audio/response.mp3" 
-print(f"APIKEY:{ele_api_key}")
 
+# Initialize ElevenLabs client
+client = ElevenLabs(api_key=ele_api_key)
 
-client = ElevenLabs(
-    api_key=ele_api_key,
-)
+from functools import lru_cache
+import torch
+
+loaded_model = None
+
+@lru_cache(maxsize=1)
+def load_model_and_tokenizer():
+    global loaded_model
+    
+    # 모델이 이미 로드된 경우 캐시된 모델을 반환
+    if loaded_model is not None:
+        print("모델이 이미 로드되어 있습니다.")
+        return loaded_model
+    
+    print("모델 초기화 시작...")
+    # 모델 로드 코드 (기존 코드와 동일)
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_compute_dtype=torch.float16,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+    )
+    
+    tokenizer = AutoTokenizer.from_pretrained(
+        "MLP-KTLim/llama-3-Korean-Bllossom-8B",
+        use_fast=True,
+        model_max_length=2048,
+        padding_side="left"
+    )
+    print("토크나이저 로드 완료")
+    
+    base_model = AutoModelForCausalLM.from_pretrained(
+        "MLP-KTLim/llama-3-Korean-Bllossom-8B",
+        quantization_config=bnb_config,
+        torch_dtype=torch.float16,
+        device_map="cuda",
+        low_cpu_mem_usage=True,
+        offload_folder="offload",
+    )
+    print("기본 모델 로드 완료")
+    
+    adapter_path = "/home/azureuser/Desktop/kr/model"
+    model = PeftModel.from_pretrained(
+        base_model,
+        adapter_path,
+        torch_dtype=torch.float16,
+    )
+    print("LoRA 어댑터 로드 완료")
+    
+    model.eval()
+    
+    # 모델을 전역 변수에 저장하여 재사용하도록 함
+    loaded_model = (model, tokenizer)
+    return loaded_model
 
 
 class RPConsumer(AsyncWebsocketConsumer):
-    # 웹소켓 연결
+    model = None
+    tokenizer = None
+    
+    @classmethod
+    async def initialize_if_needed(cls):
+        if cls.model is None or cls.tokenizer is None:
+            cls.model, cls.tokenizer = await asyncio.to_thread(load_model_and_tokenizer)
+    
     async def connect(self):
         await self.accept()
         print("웹소켓 연결 완료")
         
-    async def send_rp_options(self):
-        #첫번째 질문
-        options = [
-            "경찰 사칭",
-            "은행 사칭",
-            "대출 사칭"
+        # 비동기적으로 모델 초기화
+        await self.initialize_if_needed()
+        
+        # 시나리오별 시스템 프롬프트 설정
+        self.scenarios = {
+            "경찰 사칭": "당신은 경찰을 사칭하는 보이스피싱 사기범입니다. 사용자의 개인정보와 금전을 탈취하려 합니다.",
+            "은행 사칭": "당신은 은행원을 사칭하는 보이스피싱 사기범입니다. 계좌 정보와 금전을 탈취하려 합니다.",
+            "대출 사칭": "당신은 대출 상담사를 사칭하는 보이스피싱 사기범입니다. 대출을 미끼로 금전을 탈취하려 합니다.",
+            "가족 납치": "당신은 가족을 납치했다고 협박하는 보이스피싱 사기범입니다. 협박으로 금전을 탈취하려 합니다.",
+            "협박": "당신은 개인정보 해킹을 빙자한 보이스피싱 사기범입니다. 협박으로 금전을 탈취하려 합니다."
+        }
+        
+        self.current_scenario = None
+        self.conversation_history = []
+        
+        self.terminators = [
+            self.tokenizer.eos_token_id,
+            self.tokenizer.convert_tokens_to_ids("<|eot_id|>")
         ]
-        await self.send(text_data=json.dumps({
-            "options": options
-        }))
 
-
-    # 클라이언트 메시지 수신
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
-        bot_response = f"당신이 '{message}'라고 말했군요!"
-
-        # TTS 변환을 비동기로 실행하고 audio 데이터 얻기
-        audio_data = await self.generate_tts(bot_response)
         
-        # 응답 데이터 준비
-        response_data = {
-            "message": bot_response,
-            "audio": audio_data
-        }
-
-        # 클라이언트에게 텍스트와 오디오 데이터 함께 전송
-        await self.send(text_data=json.dumps(response_data))
-
-    # TTS 생성
-    async def generate_tts(self, text):
+        if text_data_json.get("type") == "scenario_select":
+            # 시나리오 선택 처리
+            scenario_name = text_data_json["scenario"]
+            self.current_scenario = scenario_name
+            
+            # 시나리오에 맞는 시스템 프롬프트 설정
+            self.conversation_history = [{
+                "role": "system",
+                "content": self.scenarios.get(scenario_name, "기본 보이스피싱 시나리오입니다.")
+            }]
+            
+            # 시나리오 시작 메시지 전송
+            initial_message = f"{scenario_name} 시나리오를 시작합니다."
+            await self.send(text_data=json.dumps({"message": initial_message}))
+            return
+        
+        # 일반 메시지 처리
+        user_message = text_data_json.get("message")
+        if not user_message:
+            return
+            
+        self.conversation_history.append({"role": "user", "content": user_message})
+        
         try:
-            client = ElevenLabs(api_key=ele_api_key)
-            audio_stream = client.text_to_speech.convert(
-                voice_id="PLfpgtLkFW07fDYbUiRJ",
-                output_format="mp3_44100_128",
-                text=text,
-                model_id="eleven_multilingual_v2",
+            # 입력 생성
+            input_ids = await asyncio.to_thread(
+                self.tokenizer.apply_chat_template,
+                self.conversation_history,
+                add_generation_prompt=True,
+                return_tensors="pt"
+            )
+            input_ids = input_ids.to(self.model.device)
+            
+            # 메모리 효율적인 생성 설정
+            with torch.inference_mode(), torch.cuda.amp.autocast():
+                outputs = await asyncio.to_thread(
+                    self.model.generate,
+                    input_ids,
+                    max_new_tokens=256,
+                    eos_token_id=self.terminators,
+                    do_sample=True,
+                    temperature=0.7,
+                    top_p=0.9,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    use_cache=True,
+                )
+            
+            # 응답 디코딩
+            generated_text = await asyncio.to_thread(
+                self.tokenizer.decode,
+                outputs[0][input_ids.shape[-1]:],
+                skip_special_tokens=True
             )
             
-            # Convert generator to bytes
-            audio_bytes = b''
-            for chunk in audio_stream:
-                audio_bytes += chunk
+            # TTS 생성
+            audio_data = await self.generate_tts(generated_text)
             
-            if audio_bytes:
-                # Convert to base64
-                audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
-                return audio_base64
-            else:
-                print("오디오 변환 실패")
-                return None
+            # 응답 전송
+            await self.send(text_data=json.dumps({
+                "message": generated_text,
+                "audio": audio_data
+            }))
+            
+            # 대화 기록 업데이트 및 제한
+            self.conversation_history.append({"role": "assistant", "content": generated_text})
+            if len(self.conversation_history) > 10:
+                self.conversation_history = self.conversation_history[-10:]
+                
+        except Exception as e:
+            print(f"메시지 처리 중 오류 발생: {e}")
+            await self.send(text_data=json.dumps({
+                "message": "죄송합니다. 메시지 처리 중 오류가 발생했습니다."
+            }))
 
+    async def generate_tts(self, text):
+        try:
+            audio_stream = client.text_to_speech.convert(
+                voice_id=voice_id,
+                output_format="mp3_44100_128",
+                text=text,
+                model_id=model_id,
+            )
+            
+            audio_bytes = b''.join(list(audio_stream))
+            if audio_bytes:
+                return base64.b64encode(audio_bytes).decode('utf-8')
+            return None
         except Exception as e:
             print(f"TTS 변환 중 오류 발생: {e}")
             return None
 
-
-
-
-
+    async def disconnect(self, close_code):
+        torch.cuda.empty_cache()
