@@ -158,6 +158,7 @@
         botResponse.classList.add("message", "received");
         botResponse.textContent = data.message;
         chatBody.appendChild(botResponse);
+<<<<<<< HEAD
         // 음성 출력 (TTS)
         function speakText(text) {
           const speech = new SpeechSynthesisUtterance();
@@ -174,6 +175,16 @@
           });
         //TTS
         speakText(data.message);
+=======
+
+        // 음성 출력
+        if (data.audio_url) {
+          const audio = new Audio(data.audio_url); // 서버에서 반환한 음성 파일 URL 사용
+          audio.play(); // 음성 재생
+        }
+        console.log(data.audio_url);
+
+>>>>>>> solution
         // 최신 메시지로 스크롤 이동
         chatBody.scrollTop = chatBody.scrollHeight;
       };

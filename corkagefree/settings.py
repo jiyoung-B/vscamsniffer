@@ -1,7 +1,11 @@
 from pathlib import Path
 import os
-from datetime import timedelta
+import requests
+import dotenv
 from decouple import config
+from datetime import timedelta
+from rest_framework_simplejwt.settings import api_settings
+
 
 # Build paths inside the project
 import requests
@@ -30,6 +34,7 @@ dotenv.load_dotenv()
 SECRET_KEY = os.environ.get("SECRET_KEY")
 API_KEY=os.environ.get("SECRET_KEY")
 
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
