@@ -64,7 +64,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.kakao',
     'allauth.socialaccount.providers.naver',
     'channels',
-    'corsheaders',
     "attach"
 ]
 
