@@ -1,12 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
-<<<<<<< HEAD
 from users.views import get_user_info, user_logout, protected_view, DataListView, AddDataView, naver_login_callback
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.views.generic import TemplateView  # React 파일을 서빙하기 위해 사용
 # from users.views import google_login_callback
-=======
 from users.views import DataListView, AddDataView
 from django.urls import path
 from django.conf.urls import include
@@ -15,7 +13,6 @@ from django.views.generic import TemplateView  # React 파일을 서빙하기 �
 from dj_rest_auth.registration.views import SocialLoginView
 
 
->>>>>>> solution
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -25,7 +22,6 @@ from attach.views import AudioFileUploadView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-<<<<<<< HEAD
     path('api/user/', get_user_info, name='get_user_info'),
     path('api/logout/', user_logout, name='user_logout'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -40,15 +36,7 @@ urlpatterns = [
     path('rollplaying/', include('rp.urls')),
     path('solution/', include('solution.urls')),
 ]
-=======
-    path('accounts/', include('users.urls')),  # 기존 allauth 경로
-    # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('', TemplateView.as_view(template_name="index.html"), name='home'),
-    path("api/data-list/", DataListView.as_view(), name="data_list"),
-    path("api/add-data/", AddDataView.as_view(), name="add_data"),
-    path('rollplaying/', include('rp.urls')),
-    path('solution/', include('solution.urls')),
-]
+
 
 
 #미디어 파일 저장
@@ -58,4 +46,3 @@ from django.conf import settings
 # MEDIA_URL로 들어오는 요청에 대해 MEDIA_ROOT 경로를 탐색한다.
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
->>>>>>> solution

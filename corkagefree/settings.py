@@ -4,8 +4,6 @@ import requests
 import dotenv
 from decouple import config
 from datetime import timedelta
-from rest_framework_simplejwt.settings import api_settings
-
 
 # Build paths inside the project
 import requests
