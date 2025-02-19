@@ -21,61 +21,10 @@ model_id = "eleven_multilingual_v2"
 # Initialize ElevenLabs client
 client = ElevenLabs(api_key=ele_api_key)
 
-from functools import lru_cache
-import torch
+# 모델 불러오기
+from rp.model_loader import load_model_and_tokenizer
 
-loaded_model = None
-
-@lru_cache(maxsize=1)
-def load_model_and_tokenizer():
-    global loaded_model
-    
-    # 모델이 이미 로드된 경우 캐시된 모델을 반환
-    if loaded_model is not None:
-        print("모델이 이미 로드되어 있습니다.")
-        return loaded_model
-    
-    print("모델 초기화 시작...")
-    # 모델 로드 코드 (기존 코드와 동일)
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_quant_type="nf4",
-    )
-    
-    tokenizer = AutoTokenizer.from_pretrained(
-        "MLP-KTLim/llama-3-Korean-Bllossom-8B",
-        use_fast=True,
-        model_max_length=2048,
-        padding_side="left"
-    )
-    print("토크나이저 로드 완료")
-    
-    base_model = AutoModelForCausalLM.from_pretrained(
-        "MLP-KTLim/llama-3-Korean-Bllossom-8B",
-        quantization_config=bnb_config,
-        torch_dtype=torch.float16,
-        device_map="cuda",
-        low_cpu_mem_usage=True,
-        offload_folder="offload",
-    )
-    print("기본 모델 로드 완료")
-    
-    adapter_path = "/home/azureuser/Desktop/kr/model"
-    model = PeftModel.from_pretrained(
-        base_model,
-        adapter_path,
-        torch_dtype=torch.float16,
-    )
-    print("LoRA 어댑터 로드 완료")
-    
-    model.eval()
-    
-    # 모델을 전역 변수에 저장하여 재사용하도록 함
-    loaded_model = (model, tokenizer)
-    return loaded_model
-
+model, tokenizer = load_model_and_tokenizer()
 
 class RPConsumer(AsyncWebsocketConsumer):
     model = None

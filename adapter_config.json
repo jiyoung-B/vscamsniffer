@@ -1,9 +1,6 @@
 {
   "alpha_pattern": {},
-  "auto_mapping": {
-    "base_model_class": "LlamaForCausalLM",
-    "parent_library": "transformers.models.llama.modeling_llama"
-  },
+  "auto_mapping": null,
   "base_model_name_or_path": "MLP-KTLim/llama-3-Korean-Bllossom-8B",
   "bias": "none",
   "eva_config": null,
@@ -22,14 +19,14 @@
   "megatron_core": "megatron.core",
   "modules_to_save": null,
   "peft_type": "LORA",
-  "r": 8,
+  "r": 4,
   "rank_pattern": {},
   "revision": null,
   "target_modules": [
     "q_proj",
     "v_proj"
   ],
-  "task_type": null,
+  "task_type": "CAUSAL_LM",
   "use_dora": false,
   "use_rslora": false
 }
