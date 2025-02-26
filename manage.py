@@ -5,7 +5,7 @@ import sys
 import dotenv
 
 dotenv.load_dotenv()
-
+os.environ["BITSANDBYTES_SKIP_CUDA_CHECK"] = "1"
 key = os.getenv("SECRET_KEY")
 api_key = os.getenv("API_KEY")
 
@@ -30,9 +30,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-if __name__ == '__main__':
-    dotenv.load_dotenv()
-    main()
-

@@ -70,6 +70,13 @@ INSTALLED_APPS = [
     "attach"
 ]
 
+import sys
+
+# 🚀 collectstatic 실행 시 bitsandbytes 관련 앱 제외
+if 'collectstatic' in sys.argv:
+    INSTALLED_APPS = [app for app in INSTALLED_APPS if app not in ['rp']]
+
+
 # REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -102,8 +109,20 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'corkagefree.urls'
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("172.17.0.2", 6379)],  # 로컬 Redis 서버 사용
+        },
     },
+}
+
+
+#ping을 보내서 타임아웃 설정
+CHANNELS_DEFAULTS = {
+    'websocket': {
+        'ping_interval': 20,  # 20초마다 ping 메시지 보내기
+        'ping_timeout': 10,  # 10초 이내로 pong 메시지를 받아야 타임아웃 처리
+    }
 }
 
 # Templates Configuration
@@ -150,6 +169,7 @@ USE_TZ = True
 # Static Files
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]  # STATIC_ROOT와 겹치지 않도록 수정
 
 # Default Primary Key Field Type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -213,3 +233,29 @@ AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY')
 AZURE_CONTAINER = config('AZURE_CONTAINER')
 MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+
+
+#디버깅을 위한 로깅 설정(daphne)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',  # Daphne 관련 DEBUG 로그를 콘솔로 출력
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'daphne_error.log',
+        },
+    },
+    'loggers': {
+        'daphne': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',  # DEBUG 수준으로 Daphne 로그 출력
+            'propagate': False,
+        },
+    },
+}
+
