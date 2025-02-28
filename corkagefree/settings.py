@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security Settings
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = True # 개발 환경에서 True, 배포 환경에서는 False로 설정
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '40.82.157.231', 'vscamsniffer.work.gd']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '40.82.157.231', 'vscamsniffer.work.gd','4.230.156.117:443']
 
 # Application Definition
 
@@ -111,19 +111,26 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("172.17.0.2", 6379)],  # 로컬 Redis 서버 사용
+            "hosts": [("redis", 6379) if os.environ.get("DOCKER_ENVIRONMENT") else ("localhost", 6379)],
+        },
+        "OPTIONS": {
+            "capacity": 1500,
+            "expiry": 10,
+            "group_expiry": 86400,  # 그룹 만료 시간 (초)
+            "ping_interval": 20,    # 20초마다 ping 메시지
+            "ping_timeout": 10,     # 10초 내에 pong 응답 필요
         },
     },
 }
 
 
 #ping을 보내서 타임아웃 설정
-CHANNELS_DEFAULTS = {
-    'websocket': {
-        'ping_interval': 20,  # 20초마다 ping 메시지 보내기
-        'ping_timeout': 10,  # 10초 이내로 pong 메시지를 받아야 타임아웃 처리
-    }
-}
+# CHANNELS_DEFAULTS = {
+#     'websocket': {
+#         'ping_interval': 20,  # 20초마다 ping 메시지 보내기
+#         'ping_timeout': 10,  # 10초 이내로 pong 메시지를 받아야 타임아웃 처리
+#     }
+# }
 
 # Templates Configuration
 TEMPLATES = [
@@ -180,12 +187,16 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://vscamsniffer.work.gd",
+    "https://4.230.156.117:443",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://vscamsniffer.work.gd",
+    "https://4.230.156.117:443",
 ]
+CORS_ALLOW_ALL_ORIGINS = True 
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     "Authorization",
@@ -211,7 +222,9 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 SITE_ID = 5
-LOGIN_REDIRECT_URL = "http://localhost:3000/"
+# LOGIN_REDIRECT_URL = "http://localhost:3000/"
+LOGIN_REDIRECT_URL = "https://vscamsniffer.work.gd/"
+
 SOCIALACCOUNT_ADAPTER = "users.adapters.MySocialAccountAdapter"
 ACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_LOGIN_ON_GET = True

@@ -107,7 +107,7 @@ class SolutionConsumer(AsyncWebsocketConsumer):
                             with torch.cuda.amp.autocast():
                                 outputs = self.model.generate(
                                     input_ids,
-                                    max_length=256,
+                                    max_length=650,
                                     eos_token_id=self.tokenizer.eos_token_id,
                                     pad_token_id=self.tokenizer.eos_token_id,
                                     do_sample=False,
