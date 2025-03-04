@@ -1,4 +1,4 @@
-<img src="https://capsule-render.vercel.app/api?type=waving&color=000080&height=200&section=header&text=보이스피싱예방프로젝트&fontSize=90" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=000080&height=200&section=header&text=보이스피싱예방프로젝트&fontSize=60" />
 
 
 ## 프로젝트 소개 📞
