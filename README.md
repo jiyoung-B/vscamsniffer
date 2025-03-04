@@ -1,4 +1,4 @@
-<img src="https://capsule-render.vercel.app/api?type=waving&color=000080&height=200&section=header&text=보이스피싱 예방 프로젝트&fontSize=90" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=000080&height=200&section=header&text=보이스피싱예방프로젝트&fontSize=90" />
 
 
 ## 프로젝트 소개 📞
@@ -63,3 +63,5 @@ Azure Virtual Machines
 
 ## Architecture
 ![Image](https://github.com/user-attachments/assets/46866c51-6a8c-469d-b3da-9981e8bbfd32)
+
+
