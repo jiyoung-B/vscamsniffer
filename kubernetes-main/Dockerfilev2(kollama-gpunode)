@@ -1,0 +1,28 @@
+# 1. 기본 설정
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+WORKDIR /app
+RUN apt update && apt install -y python3 python3-pip git && rm -rf /var/lib/apt/lists/*
+
+# 2. 파이썬 환경 설정
+RUN pip install --upgrade pip
+
+# 3. 🔹 requirements.txt 먼저 복사 → 변경 없으면 캐시 유지됨
+COPY requirements.txt .
+
+# 4. 🔹 일반 패키지 먼저 설치 (변경 없으면 캐시 활용)
+RUN pip install -r requirements.txt
+
+# 5. 🔹 HuggingFace 관련 패키지 따로 설치 (큰 패키지는 따로 관리)
+RUN pip install llama-index-embeddings-huggingface
+
+# 6. 🔹 channels_redis 추가 설치 (이전 단계에서 설치 안 되면 추가)
+RUN pip install channels_redis
+
+# 7. 모델 및 코드 복사 (코드 변경 시 이 단계부터 새로 빌드)
+COPY . .
+
+# 8. 포트 설정
+EXPOSE 9090
+
+# 9. 실행 명령
+CMD ["daphne", "-b", "0.0.0.0", "-p", "9090", "kollamadjango.asgi:application"]
