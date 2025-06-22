@@ -1,0 +1,32 @@
+# Python 3.8 기반 이미지 사용
+FROM python:3.8
+
+# ✅ `WORKDIR` 설정 안 함 (기본적으로 `/`에서 실행됨)
+# ✅ 모델 파일 복사 (현재 디렉토리에 그대로 유지)
+COPY kobert.pkl kobert.pkl
+COPY kobert_state_dict7.pth kobert_state_dict7.pth
+COPY tokenizer_vocab.txt tokenizer_vocab.txt
+RUN echo "✅ KoBERT 모델 복사 완료!"
+
+# 필수 패키지 설치
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt && echo "✅ Python 패키지 설치 완료!"
+# ✅ 빠진 패키지 개별 설치 (requirements.txt 영향 없이 추가)
+RUN pip install gluonnlp pandas tqdm mxnet sentencepiece==0.1.91 transformers==4.8.2 && echo "✅ 추가 패키지 설치 완료!"
+RUN pip install git+https://github.com/SKTBrain/KoBERT.git@5c46b1c68e4755b54879431bd302db621f4d2f47#subdirectory=kobert_hf
+RUN echo "✅ kobert-tokenizer 설치 완료!"
+
+
+# ffmpeg 설치 (필수 패키지 설치 후 추가)
+RUN apt-get update && apt-get install -y ffmpeg && echo "✅ ffmpeg 설치 완료!"
+
+
+# 애플리케이션 코드 복사
+COPY . .
+RUN echo "✅ 애플리케이션 코드 복사 완료!"
+
+# 포트 설정
+EXPOSE 8000
+
+# FastAPI 애플리케이션 실행
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
