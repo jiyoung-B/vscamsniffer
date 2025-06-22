@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vscamsniffer-ingress
+  namespace: vscamsniffer
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - vscamsniffer.work.gd
+    secretName: vscamsniffer-tls
+  rules:
+  - host: vscamsniffer.work.gd
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+      - path: /upload-audio/
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: fastapi-service
+            port:
+              number: 8000
+      - path: /ws/
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: django-service
+            port:
+              number: 9090  # Django 실행 포트와 맞추기
